@@ -9,6 +9,11 @@ def parse_multiwoz(dialog_path, output_path):
     as a Pandas DataFrame.
     """
 
+    # Check if the output directory exists
+    if not os.path.exists(output_path):
+        # Create the directory if it doesn't exist
+        os.makedirs(output_path)
+
     # Create an empty list to store the dataframes
     dfs = []
 
@@ -28,6 +33,7 @@ def parse_multiwoz(dialog_path, output_path):
 
         # The active intents and slot values in the dialogue
         active_intents = set()
+        requested_slots = []
         slot_values = {}
         for turn in dialogue_data[file_iter]['turns']:
             for frame in turn["frames"]:
@@ -35,7 +41,8 @@ def parse_multiwoz(dialog_path, output_path):
                     if frame['state']['active_intent'] != 'NONE':
                         active_intents.add(frame['state']['active_intent'])
                         slot_values.update(frame['state']['slot_values'])
-
+                        if frame['state']['requested_slots']:
+                            requested_slots.append(frame['state']['requested_slots'])
         # The user and system utterances in the dialogue
         dialog = []
         for utter_iter in range(turns):
@@ -54,6 +61,7 @@ def parse_multiwoz(dialog_path, output_path):
             'dialogue_id': dialogue_id,
             'services': [services],
             'active_intents': [active_intents],
+            'requested_slots': [requested_slots],
             'slot_values': [slot_values],
             'turns': [turns],
         })
