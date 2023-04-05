@@ -1,6 +1,6 @@
 # prompt
 
-## Isntructions
+## Instruction_version
 
 1.   Dialogue begins with the user's intent and ends with "goodbye", "thank you for the requests", "wishing you a good day" and so on;
 2.   The dialog consists of the user's utterances with the system;
