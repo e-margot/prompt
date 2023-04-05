@@ -22,7 +22,8 @@ start_texts = [f"Generate a dialogue in the MultiWOZ dataset for the following s
                f"Generate a dialogue for the following scenario: \n"
                ]
 end_texts = [f"""Start the dialogue with a greeting from the user and ends with a goodbye from the bot. 
-Make sure the dialogue is coherent and follows the conventions of natural conversation.""",
+Make sure the dialogue is coherent and follows the conventions of natural conversation. 
+Make sure the system gets the address, phone number or reference number if it possible""",
              ]
 
 # Load the text of the dialog from the corresponding file
@@ -40,7 +41,7 @@ def create_prompt(trial):
     # values is the same as the length of param. The suggested boolean value of True for each element in the set implies
     # that the corresponding value in param should be included in the model evaluation.
     with_intent = trial.suggest_catigorical("with_intent", [False, True])
-    with_slot = trial.suggest_catigorical("with_intent", [False, True])
+    with_slot = trial.suggest_catigorical("with_slot", [False, True])
     with_example = trial.suggest_catigorical("with_example", [False, True])
     chosen_slots = trial.suggest_categorical("slots", slots, [True] * len(slots))
     chosen_intents = trial.suggest_categorical("intents", intents, [True] * len(intents))
