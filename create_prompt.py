@@ -47,6 +47,7 @@ def create_prompt(trial):
     chosen_intents = trial.suggest_categorical("intents", intents, [True] * len(intents))
     start_text = trial.suggest_categorical("start_text", start_texts)
     end_text = trial.suggest_categorical("end_text", end_texts)
+    n_turns = trial.suggest_catigorical("num_turns", [False, True])
     # domain = trial.suggest_categorical("domain", domains)
 
     # Use the sampled parameters to construct the prompt
