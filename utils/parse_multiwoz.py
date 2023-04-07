@@ -34,7 +34,7 @@ def extract_dialogue_info(dialogue, m_woz_2_1):
                 message = [message]
             for i in range(len(message)):
                 message[i] = re.sub(r'\<(.*?)\>', '', message[i])
-            summary.add(message)
+            summary.append(message)
 
     dialog = []
     for turn in dialogue['turns']:
