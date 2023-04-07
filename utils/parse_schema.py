@@ -23,31 +23,18 @@ def parse_schema(input_path: str, output_path: str) -> None:
     # Extract service descriptions
     services = {service['service_name']: service['description'] for service in schema_file}
 
-    # Save service descriptions to file
-    services_output = os.path.join(output_path, "services_description.json")
-    with open(services_output, 'w') as f:
-        json.dump(services, f)
-
     # Extract slot descriptions
-    slots = {}
-    for service in schema_file:
-        for slot in service['slots']:
-            slots[slot['name']] = slot['description']
-
-    # Save slot descriptions to file
-    slots_output = os.path.join(output_path, "slots_description.json")
-    with open(slots_output, 'w') as f:
-        json.dump(slots, f)
+    slots = {slot['name']: slot['description'] for service in schema_file for slot in service['slots']}
 
     # Extract intent descriptions
-    intents = {}
-    for service in schema_file:
-        for intent in service['intents']:
-            intents[intent['name']] = intent['description']
+    intents = {intent['name']: intent['description'] for service in schema_file for intent in service['intents']}
 
-    # Save intent descriptions to file
-    intents_output = os.path.join(output_path, "intents_description.json")
-    with open(intents_output, 'w') as f:
+    # Save descriptions to file
+    with open(os.path.join(output_path, "services_description.json"), 'w') as f:
+        json.dump(services, f)
+    with open(os.path.join(output_path, "slots_description.json"), 'w') as f:
+        json.dump(slots, f)
+    with open(os.path.join(output_path, "intents_description.json"), 'w') as f:
         json.dump(intents, f)
 
 

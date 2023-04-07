@@ -11,7 +11,7 @@ if __name__ == "__main__":
     row = select_random_row(data)
 
     # Extract relevant information
-    dialog_id, slots, intents, requested_slots, num_turns, domains = extract_info(row)
+    dialogue_id, services, active_intents, requested_slots, slot_values, turns, dialog, summary = extract_info(row)
 
     # Load text for the header and footer
     header_texts = load_text_from_json("data/header_footer/header.json")
@@ -25,8 +25,18 @@ if __name__ == "__main__":
     trial = optuna.create_trial()
 
     # Create the prompt
-    prompt = create_prompt(trial, header_texts, footer_text, services_description, slots_description,
-                           intents_description, domains, requested_slots, slots, intents, num_turns)
+    prompt = create_prompt(trial=trial,
+                           header_text=header_texts,
+                           footer_text=footer_text,
+                           services_description=services_description,
+                           slots_description=slots_description,
+                           intents_description=intents_description,
+                           services=services,
+                           requested_slots=requested_slots,
+                           slot_values=slot_values,
+                           active_intents=active_intents,
+                           num_turns=turns,
+                           summary=summary)
 
     # Print the prompt
     print(prompt)

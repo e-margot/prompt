@@ -37,15 +37,17 @@ def extract_info(row: pd.Series) -> tuple:
 
     Returns:
         tuple: A tuple containing the dialog ID, slots, intents, requested slots,
-        number of turns, and domains extracted from the row.
+        number of turns, domains(services), dialog and summary extracted from the row.
     """
-    dialog_id = row["dialogue_id"]
-    slots = eval(row["slot_values"])  # covert dict-looklike string to dict
-    intents = row["active_intents"]
+    dialogue_id = row["dialogue_id"]
+    slot_values = eval(row["slot_values"])  # covert dict-looklike string to dict
+    active_intents = row["active_intents"]
     requested_slots = row["requested_slots"]
-    num_turns = row["turns"]
-    domains = row["services"]
-    return dialog_id, slots, intents, requested_slots, num_turns, domains
+    turns = row["turns"]
+    services = row["services"]
+    dialog = row["dialog"]
+    summary = eval(row["summary"]) # covert list-looklike string to list
+    return dialogue_id, services, active_intents, requested_slots, slot_values, turns, dialog, summary
 
 
 # Load text from JSON files
@@ -64,8 +66,8 @@ def load_text_from_json(path: str) -> dict:
 
 # Create the prompt
 def create_prompt(trial: optuna.trial.Trial, header_text: dict, footer_text: dict, services_description: dict,
-                  slots_description: dict, intents_description: dict, domains: list, requested_slots: list,
-                  slots: dict, intents: list, num_turns: int) -> str:
+                  slots_description: dict, intents_description: dict, services: list, requested_slots: list,
+                  slot_values: dict, active_intents: list, num_turns: int, summary: list) -> str:
     """Create a prompt for the conversational AI model.
 
     Args:
@@ -75,11 +77,12 @@ def create_prompt(trial: optuna.trial.Trial, header_text: dict, footer_text: dic
         services_description (dict): A dictionary mapping domain names to descriptions.
         slots_description (dict): A dictionary mapping slot names to descriptions.
         intents_description (dict): A dictionary mapping intent names to descriptions.
-        domains (list): A list of domains supported by the conversational AI model.
+        services (list): A list of services supported by the conversational AI model.
         requested_slots (list): A list of requested slots for the conversation.
-        slots (dict): A dictionary mapping slot names to values.
-        intents (list): A list of intents for the conversation.
+        slot_values (dict): A dictionary mapping slot names to values.
+        active_intents (list): A list of intents for the conversation.
         num_turns (int): The number of turns in the conversation.
+        summary (list): A list of summary of conversation.
 
     Returns:
         str: The complete prompt for the conversational AI model.
@@ -90,21 +93,21 @@ def create_prompt(trial: optuna.trial.Trial, header_text: dict, footer_text: dic
 
     prompt = f"{header_text}."
 
-    # Add domain information
-    if domains == '' or domains is None:
+    # Add services information
+    if services == '' or services is None:
         prompt += "This bot does not work with any specific domains. \n"
     else:
-        prompt += f"This bot works with the following domains: {', '.join(domains)}. \n"
+        prompt += f"This bot works with the following domains: {', '.join(services)}. \n"
         for domain, domain_desc in services_description.items():
-            if domain in domains:
+            if domain in services:
                 prompt += f"{domain}: {domain_desc} \n"
 
     # Add slot information
     if trial.suggest_categorical("with_slot", [False, True]):
         prompt += "The following slots are available: \n"
         for slot, slot_desc in slots_description.items():
-            if slot in slots:
-                prompt += f"{' '.join(slot.split('-'))}: {slot_desc} {slots.get(slot)[0]} \n"
+            if slot in slot_values:
+                prompt += f"{' '.join(slot.split('-'))}: {slot_desc} {slot_values.get(slot)[0]} \n"
 
     # Add requested slot information
     if trial.suggest_categorical("with_requested_slot", [False, True]):
@@ -119,10 +122,15 @@ def create_prompt(trial: optuna.trial.Trial, header_text: dict, footer_text: dic
 
     # Add intent information
     if trial.suggest_categorical("with_intent", [False, True]):
-        prompt += "The bot needs to perform the following intents: \n"
+        prompt += f"The bot needs to perform the following intents: \n"
         for intent, intent_desc in intents_description.items():
-            if intent in intents:
+            if intent in active_intents:
                 prompt += f"{' '.join(intent.split('_'))}: {intent_desc} \n"
+
+    # Add summary text
+    if trial.suggest_categorical("with_intent", [False, True]):
+        prompt += f"Summary of dialog: \n"
+        prompt += "\n".join(summary)
 
     # Add number of turns
     prompt += f"The conversation should have {num_turns} turns. \n"
